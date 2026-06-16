@@ -579,14 +579,14 @@
     /* Calendar */
     .cal-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .cal-title { font-size: 15px; font-weight: 700; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
-    .cal-dow { font-size: 10px; color: var(--text-3); text-align: center; padding: 4px 0; font-weight: 600; }
-    .cal-day { height: var(--cell-h, 40px); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .cal-day.empty { cursor: default; }
-    .cal-day.has-log { background: var(--primary-light); color: var(--primary); font-weight: 700; }
-    .cal-day.is-today { box-shadow: inset 0 0 0 2px var(--primary); }
-    .cal-day:active:not(.empty) { opacity: 0.7; }
-    .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--primary); margin-top: 1px; }
+    .cal-table { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; }
+    .cal-table th { font-size: 10px; color: var(--text-3); padding: 4px 0; font-weight: 600; text-align: center; }
+    .cal-table td { text-align: center; vertical-align: middle; font-size: 13px; border-radius: 8px; padding: 10px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .cal-table td.empty { cursor: default; }
+    .cal-table td.has-log { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+    .cal-table td.is-today { box-shadow: inset 0 0 0 2px var(--primary); }
+    .cal-table td:active:not(.empty) { opacity: 0.7; }
+    .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--primary); margin: 1px auto 0; }
 
     /* History view toggle */
     .hist-toggle { display: flex; background: var(--border); border-radius: 10px; padding: 2px; margin-bottom: 16px; }
@@ -936,10 +936,6 @@ function renderHistory() {
 
   if (histView === 'calendar') {
     el.innerHTML = toggle + renderCalendarHtml();
-    requestAnimationFrame(() => {
-      const g = el.querySelector('.cal-grid');
-      if (g) g.style.setProperty('--cell-h', ((g.clientWidth - 18) / 7) + 'px');
-    });
     return;
   }
 
@@ -988,20 +984,24 @@ function renderCalendarHtml() {
   const daysInMonth = new Date(y, m, 0).getDate();
   const todayStr = today();
 
-  const dows = ['日','月','火','水','木','金','土'].map(d => `<div class="cal-dow">${d}</div>`).join('');
-  let cells = '';
-  for (let i = 0; i < firstDow; i++) cells += `<div class="cal-day empty"></div>`;
+  let tbl = '<table class="cal-table"><thead><tr>';
+  ['日','月','火','水','木','金','土'].forEach(d => tbl += `<th>${d}</th>`);
+  tbl += '</tr></thead><tbody><tr>';
+  for (let i = 0; i < firstDow; i++) tbl += '<td class="empty"></td>';
+  let dow = firstDow;
   for (let d = 1; d <= daysInMonth; d++) {
     const ds = `${calMonth}-${p2(d)}`;
     const hasLog = !!(state.logs[ds] && Object.keys(state.logs[ds]).length);
     const isToday = ds === todayStr;
     const isFuture = ds > todayStr;
-    cells += `
-      <div class="cal-day ${hasLog?'has-log':''} ${isToday?'is-today':''} ${isFuture?'empty':''}"
-           ${!isFuture ? `onclick="jumpToDate('${ds}')"` : ''}>
-        ${d}${hasLog ? '<div class="cal-dot"></div>' : ''}
-      </div>`;
+    const cls = [hasLog&&'has-log', isToday&&'is-today', isFuture&&'empty'].filter(Boolean).join(' ');
+    tbl += `<td class="${cls}" ${!isFuture?`onclick="jumpToDate('${ds}')"`:''}>` +
+      `${d}${hasLog?'<div class="cal-dot"></div>':''}` + '</td>';
+    dow++;
+    if (dow === 7 && d < daysInMonth) { tbl += '</tr><tr>'; dow = 0; }
   }
+  while (dow < 7) { tbl += '<td class="empty"></td>'; dow++; }
+  tbl += '</tr></tbody></table>';
 
   const isCurrentMonth = calMonth === todayStr.slice(0, 7);
   return `
@@ -1011,7 +1011,7 @@ function renderCalendarHtml() {
         <div class="cal-title">${y}年${m}月</div>
         <button class="date-nav-btn" ${isCurrentMonth?'disabled':''} onclick="shiftCalMonth(1)">›</button>
       </div>
-      <div class="cal-grid">${dows}${cells}</div>
+      ${tbl}
     </div>`;
 }
 
