@@ -581,8 +581,7 @@
     .cal-title { font-size: 15px; font-weight: 700; }
     .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
     .cal-dow { font-size: 10px; color: var(--text-3); text-align: center; padding: 4px 0; font-weight: 600; }
-    .cal-day { position: relative; height: 0; padding-bottom: 100%; border-radius: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .cal-day-inner { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; }
+    .cal-day { height: var(--cell-h, 40px); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .cal-day.empty { cursor: default; }
     .cal-day.has-log { background: var(--primary-light); color: var(--primary); font-weight: 700; }
     .cal-day.is-today { box-shadow: inset 0 0 0 2px var(--primary); }
@@ -937,6 +936,10 @@ function renderHistory() {
 
   if (histView === 'calendar') {
     el.innerHTML = toggle + renderCalendarHtml();
+    requestAnimationFrame(() => {
+      const g = el.querySelector('.cal-grid');
+      if (g) g.style.setProperty('--cell-h', ((g.clientWidth - 18) / 7) + 'px');
+    });
     return;
   }
 
@@ -987,7 +990,7 @@ function renderCalendarHtml() {
 
   const dows = ['日','月','火','水','木','金','土'].map(d => `<div class="cal-dow">${d}</div>`).join('');
   let cells = '';
-  for (let i = 0; i < firstDow; i++) cells += `<div class="cal-day empty"><div class="cal-day-inner"></div></div>`;
+  for (let i = 0; i < firstDow; i++) cells += `<div class="cal-day empty"></div>`;
   for (let d = 1; d <= daysInMonth; d++) {
     const ds = `${calMonth}-${p2(d)}`;
     const hasLog = !!(state.logs[ds] && Object.keys(state.logs[ds]).length);
@@ -996,7 +999,7 @@ function renderCalendarHtml() {
     cells += `
       <div class="cal-day ${hasLog?'has-log':''} ${isToday?'is-today':''} ${isFuture?'empty':''}"
            ${!isFuture ? `onclick="jumpToDate('${ds}')"` : ''}>
-        <div class="cal-day-inner">${d}${hasLog ? '<div class="cal-dot"></div>' : ''}</div>
+        ${d}${hasLog ? '<div class="cal-dot"></div>' : ''}
       </div>`;
   }
 
