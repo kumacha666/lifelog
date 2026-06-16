@@ -601,6 +601,10 @@
     .shop-row.checked .shop-name { text-decoration: line-through; color: var(--text-3); }
     .shop-del { background: none; border: none; color: var(--text-3); font-size: 20px; cursor: pointer; padding: 4px; -webkit-tap-highlight-color: transparent; }
     .shop-add-row { display: flex; gap: 8px; }
+    .shop-type-toggle { display: flex; gap: 8px; margin-top: 10px; }
+    .shop-type-btn { flex: 1; padding: 8px; font-size: 13px; font-weight: 600; border: 2px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text-2); cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
+    .shop-type-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+    .shop-tag { font-size: 11px; font-weight: 700; color: var(--primary); background: var(--primary-light); border-radius: 100px; padding: 2px 7px; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -1447,16 +1451,20 @@ function clearAll() {
 }
 
 // ─── SHOPPING LIST ────────────────────────────────────────────
+let shopType = 'once'; // 'once' | 'recurring'
+
 function renderShopping() {
   const el = document.getElementById('view-shopping');
   const items = state.shopping || [];
-  const pending = items.filter(i => !i.checked);
-  const done    = items.filter(i => i.checked);
+  const pending      = items.filter(i => !i.checked);
+  const doneOnce     = items.filter(i => i.checked && !i.recurring);
+  const doneRecur    = items.filter(i => i.checked && i.recurring);
 
   const row = i => `
     <div class="shop-row ${i.checked?'checked':''}">
       <button class="shop-check" onclick="toggleShop('${i.id}')">${i.checked?'☑':'☐'}</button>
       <span class="shop-name">${esc(i.name)}</span>
+      ${i.recurring ? '<span class="shop-tag">🔄 定期</span>' : ''}
       <button class="shop-del" onclick="deleteShopItem('${i.id}')">✕</button>
     </div>`;
 
@@ -1468,22 +1476,36 @@ function renderShopping() {
                onkeydown="if(event.key==='Enter')addShopItem()" style="flex:1">
         <button class="btn btn-primary" style="width:auto;padding:12px 16px;flex-shrink:0" onclick="addShopItem()">追加</button>
       </div>
+      <div class="shop-type-toggle">
+        <button class="shop-type-btn ${shopType==='once'?'active':''}" onclick="setShopType('once')">1回だけ</button>
+        <button class="shop-type-btn ${shopType==='recurring'?'active':''}" onclick="setShopType('recurring')">🔄 定期品</button>
+      </div>
     </div>
+
     ${pending.length ? `<div class="section-title">買うもの (${pending.length}件)</div>${pending.map(row).join('')}` : ''}
-    ${done.length ? `
-      <div class="section-title">購入済み (${done.length}件)</div>
-      ${done.map(row).join('')}
-      <button class="btn btn-secondary" style="margin-top:8px" onclick="clearCheckedShop()">購入済みをすべて削除</button>` : ''}
-    ${!pending.length && !done.length ? `<div class="empty"><div class="empty-emoji">🛒</div><p>買い物リストは空です<br>必要なものを追加しましょう</p></div>` : ''}
+
+    ${doneRecur.length ? `
+      <div class="section-title">購入済みの定期品 (${doneRecur.length}件)</div>
+      ${doneRecur.map(row).join('')}
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="resetRecurringShop()">🔄 定期品をリセット（次回分へ）</button>` : ''}
+
+    ${doneOnce.length ? `
+      <div class="section-title">購入済み・1回品 (${doneOnce.length}件)</div>
+      ${doneOnce.map(row).join('')}
+      <button class="btn btn-secondary" style="margin-top:8px;background:var(--danger);color:white;border:none" onclick="clearOnceShop()">🗑️ 1回品をすべて削除</button>` : ''}
+
+    ${!pending.length && !doneRecur.length && !doneOnce.length ? `<div class="empty"><div class="empty-emoji">🛒</div><p>買い物リストは空です<br>必要なものを追加しましょう</p></div>` : ''}
   `;
 }
+
+function setShopType(type) { shopType = type; renderShopping(); }
 
 function addShopItem() {
   const input = document.getElementById('shop-input');
   const name = input.value.trim();
   if (!name) return;
   if (!state.shopping) state.shopping = [];
-  state.shopping.unshift({ id: 's'+Date.now(), name, checked: false, addedAt: Date.now() });
+  state.shopping.unshift({ id: 's'+Date.now(), name, checked: false, recurring: shopType === 'recurring', addedAt: Date.now() });
   save();
   input.value = '';
   renderShopping();
@@ -1501,12 +1523,19 @@ function deleteShopItem(id) {
   renderShopping();
 }
 
-function clearCheckedShop() {
-  if (!confirm('購入済みアイテムをすべて削除しますか？')) return;
-  state.shopping = (state.shopping||[]).filter(i => !i.checked);
+function resetRecurringShop() {
+  (state.shopping||[]).filter(i => i.recurring).forEach(i => i.checked = false);
   save();
   renderShopping();
-  toast('購入済みを削除しました');
+  toast('定期品をリセットしました');
+}
+
+function clearOnceShop() {
+  if (!confirm('1回品をすべて削除しますか？')) return;
+  state.shopping = (state.shopping||[]).filter(i => i.recurring || !i.checked);
+  save();
+  renderShopping();
+  toast('削除しました');
 }
 
 // ─── Utilities ────────────────────────────────────────────────
