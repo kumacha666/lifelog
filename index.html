@@ -694,7 +694,7 @@ const CAT_TYPES = {
   custom:     { label: 'カスタム',     icon: '📝', desc: '自由に記録', multi: false }
 };
 
-const ICONS = ['⌚','💍','👗','👟','👜','🕶️','🧢','🎒','👔','🧥','🍳','🥗','🍱','🍜','☕','🧃','🍷','🧁','💊','🌿','🛒','💰','🏃','🏋️','🚴','🏊','🧘','🥊','🎾','⚽','🤸','🚶','🏔️','🧗','🏄','💪','⚖️','🩺','😴','🧠','📏','📚','🎵','🎮','🐾','✏️','⭐','❤️'];
+const ICONS = ['👗','👟','👜','⌚','💍','🕶️','🧢','🎒','👔','🧥','🍳','🥗','🍱','🍜','☕','🧃','🍷','🧁','💊','🌿','🛒','💰','🏃','🏋️','🚴','🏊','🧘','🥊','🎾','⚽','🤸','🚶','🏔️','🧗','🏄','💪','⚖️','🩺','😴','🧠','📏','📚','🎵','🎮','🐾','✏️','⭐','❤️'];
 const COLORS = ['#6366f1','#ec4899','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ef4444','#14b8a6','#f97316','#84cc16'];
 
 // ─── State ────────────────────────────────────────────────────
@@ -1308,7 +1308,7 @@ function openCatEdit(catId) {
 
   const name  = cat?.name  || '';
   const type  = cat?.type  || 'fashion';
-  const icon  = cat?.icon  || '⌚';
+  const icon  = cat?.icon  || '👗';
   const color = cat?.color || '#6366f1';
   const items = [...(cat?.items || [])];
 
@@ -1337,7 +1337,7 @@ function openCatEdit(catId) {
 
     <div class="field-group">
       <div class="field-label">カテゴリ名</div>
-      <input class="field-input" id="ce-name" placeholder="例: 腕時計、朝食、サプリ..." value="${esc(name)}">
+      <input class="field-input" id="ce-name" placeholder="例: コーディネート、朝食、サプリ..." value="${esc(name)}">
     </div>
 
     <div class="field-label" style="margin-bottom:8px">種類</div>
@@ -1351,6 +1351,13 @@ function openCatEdit(catId) {
 
     <hr class="divider">
     <div class="field-label" style="margin-bottom:8px">アイテム登録（事前に登録すると記録時に選べます）</div>
+    ${isNew && tut === 2 ? `<div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;line-height:1.7;color:var(--text-2)">
+      💡 <b>アイテムとは？</b><br>
+      記録する時の「選択肢」を事前に登録しておく機能です。<br>
+      例えば「コーディネート」なら：<br>
+      <b>カジュアル、フォーマル、スポーティ</b> など<br>
+      登録しなくても自由入力で記録できます。
+    </div>` : ''}
     <div id="ce-items">${itemsHtml}</div>
     <button class="btn-sm" style="background:var(--primary-light);color:var(--primary);margin-bottom:16px" onclick="addItemRow()">＋ アイテムを追加</button>
 
@@ -1636,7 +1643,7 @@ function tutRender() {
           <div class="tut-title">LifeLogへようこそ！</div>
           <div class="tut-desc">
             毎日の記録をつけるライフログアプリです。<br>
-            腕時計・食事・運動など、自分だけの<br>カテゴリを作って記録しましょう。
+            コーディネート・食事・運動など、自分だけの<br>カテゴリを作って記録しましょう。
           </div>
           <button class="btn btn-primary" onclick="tutStep2()">はじめる →</button>
           <br><button class="tut-skip" onclick="tutDone()">スキップ</button>
@@ -1653,7 +1660,7 @@ function tutRender() {
         <div class="tut-tip" style="top:${top}px">
           <strong>👆 カテゴリを追加しましょう</strong><br>
           上のボタンをタップして、最初のカテゴリを作ってみましょう。<br>
-          例：⌚ 腕時計、🍽️ 食事、💊 サプリなど
+          例：👗 コーディネート、🍽️ 食事、💊 サプリなど
           <br><button class="tut-skip" onclick="tutDone()">スキップ</button>
         </div>`;
     });
@@ -1668,7 +1675,7 @@ function tutRender() {
         <div class="tut-tip" style="top:${top}px">
           <strong>👆 タップして記録しましょう</strong><br>
           作ったカテゴリをタップすると、今日の記録ができます。
-          <br><button class="tut-skip" onclick="tutDone()">スキップ</button>
+          <br><button class="tut-skip" onclick="tutDone()">閉じる</button>
         </div>`;
     });
   } else if (tut === 4) {
@@ -1683,7 +1690,7 @@ function tutRender() {
             カテゴリは設定画面からいつでも追加できます。<br>
             毎日の記録を楽しんでください！
           </div>
-          <button class="btn btn-primary" onclick="tutDone()">はじめる</button>
+          <button class="btn btn-primary" onclick="tutDone()">閉じる</button>
         </div>
       </div>`;
   } else {
