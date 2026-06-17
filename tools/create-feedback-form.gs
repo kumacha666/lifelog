@@ -6,9 +6,9 @@
  *   clasp login
  *   cd tools && clasp create --title "LifeLog Feedback" --type standalone
  *
- * デプロイ & 実行:
- *   cd tools && clasp push && clasp open
- *   → ブラウザで開いたら createFeedbackForm を実行
+ * 反映:
+ *   cd tools && clasp push
+ *   → GASエディタで createFeedbackForm を実行
  *   → ログに回答用URL・編集URL・集計URLが表示される
  */
 
