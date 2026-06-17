@@ -1330,7 +1330,10 @@ function showItemTip() {
 
 function openCatEdit(catId) {
   editCatId = catId;
-  if (tut === 2) document.getElementById('tut-container').innerHTML = '';
+  if (tut === 2) {
+    document.getElementById('tut-container').innerHTML = '';
+    document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
+  }
   const cat = catId ? state.cats.find(c => c.id === catId) : null;
   const isNew = !cat;
 
