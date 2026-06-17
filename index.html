@@ -1300,9 +1300,37 @@ function renderSettings() {
 
 // ─── CATEGORY EDIT MODAL ──────────────────────────────────────
 let editCatId = null;
+const ITEM_TIP_KEY = 'lifelog_item_tip_done';
+let itemTipVisible = !localStorage.getItem(ITEM_TIP_KEY);
+
+function itemTipHtml() {
+  if (!itemTipVisible) return '';
+  return `<div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;line-height:1.7;color:var(--text-2);position:relative">
+    <button onclick="dismissItemTip()" style="position:absolute;top:6px;right:8px;background:none;border:none;font-size:16px;color:var(--text-2);cursor:pointer;padding:4px">✕</button>
+    💡 <b>アイテムとは？</b><br>
+    記録する時の「選択肢」を事前に登録しておく機能です。<br>
+    例えば「コーディネート」なら：<br>
+    <b>カジュアル、フォーマル、スポーティ</b> など<br>
+    登録しなくても自由入力で記録できます。
+  </div>`;
+}
+
+function dismissItemTip() {
+  itemTipVisible = false;
+  localStorage.setItem(ITEM_TIP_KEY, '1');
+  const el = document.getElementById('ce-item-tip');
+  if (el) el.innerHTML = '';
+}
+
+function showItemTip() {
+  itemTipVisible = true;
+  const el = document.getElementById('ce-item-tip');
+  if (el) el.innerHTML = itemTipHtml();
+}
 
 function openCatEdit(catId) {
   editCatId = catId;
+  if (tut === 2) document.getElementById('tut-container').innerHTML = '';
   const cat = catId ? state.cats.find(c => c.id === catId) : null;
   const isNew = !cat;
 
@@ -1350,14 +1378,11 @@ function openCatEdit(catId) {
     <div class="color-row" id="ce-colors">${colorHtml}</div>
 
     <hr class="divider">
-    <div class="field-label" style="margin-bottom:8px">アイテム登録（事前に登録すると記録時に選べます）</div>
-    ${isNew && tut === 2 ? `<div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;line-height:1.7;color:var(--text-2)">
-      💡 <b>アイテムとは？</b><br>
-      記録する時の「選択肢」を事前に登録しておく機能です。<br>
-      例えば「コーディネート」なら：<br>
-      <b>カジュアル、フォーマル、スポーティ</b> など<br>
-      登録しなくても自由入力で記録できます。
-    </div>` : ''}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="field-label" style="margin:0">アイテム登録</div>
+      ${!itemTipVisible ? '<button onclick="showItemTip()" style="background:none;border:1px solid var(--border);border-radius:50%;width:24px;height:24px;font-size:13px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center">?</button>' : ''}
+    </div>
+    <div id="ce-item-tip">${itemTipHtml()}</div>
     <div id="ce-items">${itemsHtml}</div>
     <button class="btn-sm" style="background:var(--primary-light);color:var(--primary);margin-bottom:16px" onclick="addItemRow()">＋ アイテムを追加</button>
 
