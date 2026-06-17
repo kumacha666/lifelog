@@ -812,6 +812,10 @@ function goToday() { curDate = today(); renderToday(); }
 function openLog(catId) {
   const cat = state.cats.find(c => c.id === catId);
   if (!cat) return;
+  if (tut === 3) {
+    document.getElementById('tut-container').innerHTML = '';
+    document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
+  }
   const e = (state.logs[curDate]||{})[catId] || {};
   const selVals = Array.isArray(e.v) ? [...e.v] : (e.v ? [e.v] : []);
   const typeInfo = CAT_TYPES[cat.type] || CAT_TYPES.custom;
