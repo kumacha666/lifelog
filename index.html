@@ -783,7 +783,7 @@ function renderToday() {
            onclick="openLog('${cat.id}')">
         <div class="cat-icon">${cat.icon||'📝'}</div>
         <div class="cat-name">${esc(cat.name)}</div>
-        <div class="cat-value ${e?'':'empty'}">${val||'未記録'}</div>
+        <div class="cat-value ${e?'':'empty'}">${val || (e ? '✓' : '未記録')}</div>
       </div>`;
   }).join('');
 
@@ -877,7 +877,7 @@ function openLog(catId) {
     </div>
 
     <button class="btn btn-primary" onclick="saveLog('${catId}')">保存する</button>
-    ${(selVals.length||e.free||e.note) ? `<button class="btn btn-secondary" onclick="clearLog('${catId}')">記録を消去</button>` : ''}
+    ${e ? `<button class="btn btn-secondary" onclick="clearLog('${catId}')">記録を消去</button>` : ''}
     <button class="btn btn-secondary" onclick="closeModal('log-modal')">キャンセル</button>
   `;
   document.getElementById('log-modal').classList.add('show');
@@ -905,7 +905,7 @@ function saveLog(catId) {
   if (free) selVals.push(free);
 
   if (!selVals.length && !kcal && !yen && !min && !km && !wt && !fat && !note) {
-    clearLog(catId); return;
+    if (state.logs[curDate]?.[catId]) { clearLog(catId); return; }
   }
 
   if (!state.logs[curDate]) state.logs[curDate] = {};
@@ -1694,7 +1694,8 @@ function tutRender() {
     });
   } else if (tut === 3) {
     requestAnimationFrame(() => {
-      const card = document.querySelector('.cat-card');
+      const cards = document.querySelectorAll('.cat-card');
+      const card = cards[cards.length - 1];
       if (card) card.classList.add('tut-highlight');
       const r = card?.getBoundingClientRect();
       const top = r ? r.bottom + 12 : 300;
