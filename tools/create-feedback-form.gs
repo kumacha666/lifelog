@@ -1,12 +1,15 @@
 /**
  * LifeLog フィードバックフォーム自動作成スクリプト
  *
- * 使い方:
- * 1. https://script.google.com/ を開く
- * 2. 新しいプロジェクトを作成
- * 3. このコードを貼り付けて「実行」ボタンを押す
- * 4. 初回は権限の承認を求められるので許可する
- * 5. ログに表示されるURLがフォームのURLです
+ * セットアップ (初回のみ):
+ *   npm install -g @google/clasp
+ *   clasp login
+ *   cd tools && clasp create --title "LifeLog Feedback" --type standalone
+ *
+ * デプロイ & 実行:
+ *   cd tools && clasp push && clasp open
+ *   → ブラウザで開いたら createFeedbackForm を実行
+ *   → ログに回答用URL・編集URL・集計URLが表示される
  */
 
 function createFeedbackForm() {
