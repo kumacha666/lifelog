@@ -511,6 +511,18 @@
       color: var(--text-2);
     }
     .empty-emoji { font-size: 48px; margin-bottom: 12px; }
+
+    /* Tutorial */
+    .tut-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 900; }
+    .tut-card { position: fixed; inset: 0; z-index: 901; display: flex; align-items: center; justify-content: center; }
+    .tut-card-inner { background: var(--card); border-radius: 20px; padding: 32px 24px; margin: 20px; max-width: 340px; text-align: center; }
+    .tut-card-inner .tut-emoji { font-size: 48px; margin-bottom: 12px; }
+    .tut-card-inner .tut-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .tut-card-inner .tut-desc { font-size: 14px; color: var(--text-2); line-height: 1.7; margin-bottom: 20px; }
+    .tut-highlight { position: relative; z-index: 901; animation: tut-pulse 1.5s infinite; border-radius: 14px; }
+    @keyframes tut-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.5); } 50% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } }
+    .tut-tip { position: fixed; left: 16px; right: 16px; max-width: 398px; margin: 0 auto; background: var(--card); border-radius: 16px; padding: 16px 20px; z-index: 902; box-shadow: 0 4px 24px rgba(0,0,0,0.3); font-size: 14px; line-height: 1.6; text-align: center; }
+    .tut-skip { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--text-3); cursor: pointer; border: none; background: none; font-family: inherit; }
     .empty p { font-size: 15px; line-height: 1.7; }
 
     /* Toast */
@@ -666,6 +678,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="tut-container"></div>
 
 <script>
 // ─── Constants ───────────────────────────────────────────────
@@ -913,6 +926,7 @@ function saveLog(catId) {
   closeModal('log-modal');
   renderToday();
   toast('記録しました ✓');
+  tutAfterLogSave();
 }
 
 function clearLog(catId) {
@@ -1271,6 +1285,16 @@ function renderSettings() {
       </div>
       <div class="setting-chevron">›</div>
     </div>
+
+    <div class="section-title">ヘルプ</div>
+    <div class="setting-row" onclick="tutReplay()">
+      <div class="setting-icon">📖</div>
+      <div class="setting-info">
+        <div class="setting-name">使い方ガイド</div>
+        <div class="setting-sub">チュートリアルをもう一度見る</div>
+      </div>
+      <div class="setting-chevron">›</div>
+    </div>
   `;
 }
 
@@ -1399,6 +1423,7 @@ function saveCat() {
   closeModal('cat-modal');
   renderSettings();
   toast(editCatId ? '更新しました ✓' : 'カテゴリを追加しました ✓');
+  if (!editCatId) tutAfterCatSave();
 }
 
 function deleteCat(catId) {
@@ -1558,8 +1583,115 @@ function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── TUTORIAL ────────────────────────────────────────────────
+const TUT_KEY = 'lifelog_tut_done';
+let tut = 0;
+
+function tutStart() {
+  tut = 1;
+  tutRender();
+}
+
+function tutRender() {
+  const c = document.getElementById('tut-container');
+  if (tut === 1) {
+    c.innerHTML = `
+      <div class="tut-backdrop"></div>
+      <div class="tut-card">
+        <div class="tut-card-inner">
+          <div class="tut-emoji">📔</div>
+          <div class="tut-title">LifeLogへようこそ！</div>
+          <div class="tut-desc">
+            毎日の記録をつけるライフログアプリです。<br>
+            腕時計・食事・運動など、自分だけの<br>カテゴリを作って記録しましょう。
+          </div>
+          <button class="btn btn-primary" onclick="tutStep2()">はじめる →</button>
+          <br><button class="tut-skip" onclick="tutDone()">スキップ</button>
+        </div>
+      </div>`;
+  } else if (tut === 2) {
+    requestAnimationFrame(() => {
+      const btn = document.querySelector('.add-cat-btn');
+      if (btn) btn.classList.add('tut-highlight');
+      const r = btn?.getBoundingClientRect();
+      const top = r ? r.bottom + 12 : 300;
+      c.innerHTML = `
+        <div class="tut-backdrop"></div>
+        <div class="tut-tip" style="top:${top}px">
+          <strong>👆 カテゴリを追加しましょう</strong><br>
+          上のボタンをタップして、最初のカテゴリを作ってみましょう。<br>
+          例：⌚ 腕時計、🍽️ 食事、💊 サプリなど
+          <br><button class="tut-skip" onclick="tutDone()">スキップ</button>
+        </div>`;
+    });
+  } else if (tut === 3) {
+    requestAnimationFrame(() => {
+      const card = document.querySelector('.cat-card');
+      if (card) card.classList.add('tut-highlight');
+      const r = card?.getBoundingClientRect();
+      const top = r ? r.bottom + 12 : 300;
+      c.innerHTML = `
+        <div class="tut-backdrop"></div>
+        <div class="tut-tip" style="top:${top}px">
+          <strong>👆 タップして記録しましょう</strong><br>
+          作ったカテゴリをタップすると、今日の記録ができます。
+          <br><button class="tut-skip" onclick="tutDone()">スキップ</button>
+        </div>`;
+    });
+  } else if (tut === 4) {
+    c.innerHTML = `
+      <div class="tut-backdrop"></div>
+      <div class="tut-card">
+        <div class="tut-card-inner">
+          <div class="tut-emoji">🎉</div>
+          <div class="tut-title">準備完了！</div>
+          <div class="tut-desc">
+            使い方はバッチリです。<br>
+            カテゴリは設定画面からいつでも追加できます。<br>
+            毎日の記録を楽しんでください！
+          </div>
+          <button class="btn btn-primary" onclick="tutDone()">はじめる</button>
+        </div>
+      </div>`;
+  } else {
+    c.innerHTML = '';
+  }
+}
+
+function tutStep2() {
+  tut = 2;
+  nav('settings');
+  tutRender();
+}
+
+function tutAfterCatSave() {
+  if (tut !== 2) return;
+  tut = 3;
+  nav('today');
+  tutRender();
+}
+
+function tutAfterLogSave() {
+  if (tut !== 3) return;
+  tut = 4;
+  tutRender();
+}
+
+function tutDone() {
+  tut = 0;
+  localStorage.setItem(TUT_KEY, '1');
+  document.querySelectorAll('.tut-highlight').forEach(e => e.classList.remove('tut-highlight'));
+  document.getElementById('tut-container').innerHTML = '';
+}
+
+function tutReplay() {
+  localStorage.removeItem(TUT_KEY);
+  tutStart();
+}
+
 // ─── Init ─────────────────────────────────────────────────────
 renderToday();
+if (!localStorage.getItem(TUT_KEY) && !state.cats.length) tutStart();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
