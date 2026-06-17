@@ -775,6 +775,7 @@ function renderToday() {
       if (e.yen)  val += ` · ¥${Number(e.yen).toLocaleString()}`;
       if (e.min)  val += ` · ${e.min}分`;
       if (e.km)   val += ` · ${e.km}km`;
+      if (e.steps) val += ` · ${Number(e.steps).toLocaleString()}歩`;
       if (e.wt)   val += ` · ${e.wt}kg`;
       if (e.fat)  val += ` · ${e.fat}%`;
     }
@@ -845,6 +846,10 @@ function openLog(catId) {
         <div class="field-label">距離 (km)</div>
         <input class="field-input" id="f-km" type="number" inputmode="decimal" placeholder="例: 5.0" value="${e.km||''}">
       </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">歩数 (任意)</div>
+      <input class="field-input" id="f-steps" type="number" inputmode="numeric" placeholder="例: 8000" value="${e.steps||''}">
     </div>`);
   if (cat.type === 'body') extraFields.push(`
     <div class="row-2">
@@ -897,6 +902,7 @@ function saveLog(catId) {
   const yen  = document.getElementById('f-yen')?.value || '';
   const min  = document.getElementById('f-min')?.value || '';
   const km   = document.getElementById('f-km')?.value || '';
+  const steps = document.getElementById('f-steps')?.value || '';
   const wt   = document.getElementById('f-wt')?.value || '';
   const fat  = document.getElementById('f-fat')?.value || '';
   const note = document.getElementById('f-note')?.value?.trim() || '';
@@ -908,7 +914,7 @@ function saveLog(catId) {
 
   if (free) selVals.push(free);
 
-  if (!selVals.length && !kcal && !yen && !min && !km && !wt && !fat && !note) {
+  if (!selVals.length && !kcal && !yen && !min && !km && !steps && !wt && !fat && !note) {
     if (state.logs[curDate]?.[catId]) { clearLog(catId); return; }
   }
 
@@ -920,6 +926,7 @@ function saveLog(catId) {
     yen:  yen  ? Number(yen)  : null,
     min:  min  ? Number(min)  : null,
     km:   km   ? Number(km)   : null,
+    steps: steps ? Number(steps) : null,
     wt:   wt   ? Number(wt)   : null,
     fat:  fat  ? Number(fat)  : null,
     note,
@@ -974,6 +981,7 @@ function renderHistory() {
       if (e.yen)  val += ` (¥${Number(e.yen).toLocaleString()})`;
       if (e.min)  val += ` (${e.min}分)`;
       if (e.km)   val += ` (${e.km}km)`;
+      if (e.steps) val += ` (${Number(e.steps).toLocaleString()}歩)`;
       if (e.wt)   val += ` (${e.wt}kg)`;
       if (e.fat)  val += ` (${e.fat}%)`;
       if (!val && e.note) val = e.note;
